@@ -548,7 +548,7 @@
         const overlay = document.getElementById('elastic-enhancer-overlay');
         overlay.innerHTML = createEnhancedInterfaceHTML(data, product.name);
         
-        initializeEnhancedInterface(data);
+        initializeEnhancedInterface(data, product.name);
     }
 
     function parseProductTable(table) {
@@ -1124,6 +1124,7 @@
                             <option value="deprecated">Deprecated</option>
                         </select>
                         <button id="enhanced-clear">Clear</button>
+                        <button id="enhanced-export-csv">Export CSV</button>
                     </div>
                     
                     <div class="stats-bar">
@@ -1165,7 +1166,7 @@
         `;
     }
 
-    function initializeEnhancedInterface(data) {
+    function initializeEnhancedInterface(data, productName) {
         let filteredData = [...data];
         
         // Populate filters
@@ -1181,7 +1182,8 @@
         document.getElementById('enhanced-arch-filter').addEventListener('change', applyFilters);
         document.getElementById('enhanced-status-filter').addEventListener('change', applyFilters);
         document.getElementById('enhanced-clear').addEventListener('click', clearFilters);
-        
+        document.getElementById('enhanced-export-csv').addEventListener('click', () => exportDataToCSV(filteredData, productName));
+
         function applyFilters() {
             const search = document.getElementById('enhanced-search').value.toLowerCase();
             const agentVersionFilter = document.getElementById('enhanced-agent-version').value;
@@ -1376,6 +1378,39 @@
         } else {
             detailRow.style.display = 'none';
             button.textContent = button.textContent.replace('Hide', 'View');
+        }
+    }
+
+    function exportDataToCSV(data, productName) {
+        const filename = `${productName.toLowerCase().replace(/\s+/g, '-')}-support-matrix.csv`;
+        const title = `${productName} Support Matrix`;
+        const headers = ['Operating System', 'Supported Versions', 'Architectures', 'Status', 'Notes'];
+        
+        const csvRows = [];
+        csvRows.push(`"${title}"`); // Add title as the first row
+        csvRows.push(''); // Add a blank line for spacing
+        csvRows.push(headers.join(',')); // Add header row
+
+        data.forEach(item => {
+            const versions = `"${item.versions.join(', ')}"`;
+            const architectures = `"${item.architecture.join(', ')}"`;
+            const notes = `"${item.notes.replace(/"/g, '""')}"`;
+            const row = [item.os, versions, architectures, item.status, notes].join(',');
+            csvRows.push(row);
+        });
+
+        const csvString = csvRows.join('\n');
+        const blob = new Blob([csvString], { type: 'text/csv;charset=utf-8;' });
+
+        const link = document.createElement('a');
+        if (link.download !== undefined) {
+            const url = URL.createObjectURL(blob);
+            link.setAttribute('href', url);
+            link.setAttribute('download', filename);
+            link.style.visibility = 'hidden';
+            document.body.appendChild(link);
+            link.click();
+            document.body.removeChild(link);
         }
     }
 })();
