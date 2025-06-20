@@ -1,0 +1,18 @@
+{
+  "manifest_version": 3,
+  "name": "Elastic Support Matrix Enhancer",
+  "version": "1.0",
+  "description": "Transforms Elastic's support matrix into a searchable, filterable interface",
+  "permissions": ["activeTab"],
+  "content_scripts": [
+    {
+      "matches": ["https://www.elastic.co/support/matrix*"],
+      "js": ["content.js"],
+      "css": ["styles.css"]
+    }
+  ],
+  "action": {
+    "default_popup": "popup.html",
+    "default_title": "Elastic Support Matrix Enhancer"
+  }
+}
